@@ -7,53 +7,48 @@ st.set_page_config(
     layout="wide"
 )
 
-# CSS - interfață mai compactă
+# =====================================================
+# DESIGN COMPACT
+# =====================================================
+
 st.markdown("""
 <style>
-    .block-container {
-        padding-top: 1.2rem;
-        padding-bottom: 1rem;
-    }
+.block-container {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    max-width: 1600px;
+}
 
-    h1 {font-size: 1.8rem !important;}
-    h2 {font-size: 1.25rem !important;}
-    h3 {font-size: 1.05rem !important;}
+h1 {font-size: 1.65rem !important;}
+h2 {font-size: 1.15rem !important;}
+h3 {font-size: 1rem !important;}
 
-    div[data-testid="stMetricValue"] {
-        font-size: 1.25rem;
-    }
+div[data-testid="stMetricValue"] {
+    font-size: 1.15rem;
+}
 
-    div[data-testid="stMetricLabel"] {
-        font-size: 0.75rem;
-    }
+div[data-testid="stMetricLabel"] {
+    font-size: 0.72rem;
+}
 
-    .cursa-box {
-        padding: 7px 10px;
-        border: 1px solid #444;
-        border-radius: 7px;
-        margin-bottom: 5px;
-        font-size: 0.88rem;
-    }
+.small {
+    font-size: 0.80rem;
+}
 
-    .verde {
-        color: #21c55d;
-        font-weight: bold;
-    }
+.green {
+    color: #16a34a;
+    font-weight: bold;
+}
 
-    .rosu {
-        color: #ff4b4b;
-        font-weight: bold;
-    }
-
-    .mic {
-        font-size: 0.78rem;
-        opacity: 0.80;
-    }
+.red {
+    color: #dc2626;
+    font-weight: bold;
+}
 </style>
 """, unsafe_allow_html=True)
 
 st.title("🚛 Alpina Transport Assistant")
-st.caption("Analiză rentabilitate Export → Import")
+st.caption("Analiză rentabilitate circuit complet")
 
 
 # =====================================================
@@ -86,7 +81,7 @@ with e3:
 
 with e4:
     pret_export = st.number_input(
-        "Preț export €",
+        "Încasare export €",
         min_value=0,
         value=0,
         step=50
@@ -94,16 +89,16 @@ with e4:
 
 
 # =====================================================
-# CAMION / CIRCUIT
+# CAMION DUPĂ EXPORT
 # =====================================================
 
-st.write("## 🚛 Camion / circuit")
+st.write("## 🚛 Camion disponibil")
 
-c1, c2, c3, c4, c5 = st.columns(5)
+c1, c2, c3, c4 = st.columns(4)
 
 with c1:
     locatie = st.text_input(
-        "Camion liber în",
+        "Locație camion",
         placeholder="Katowice, PL"
     )
 
@@ -123,19 +118,34 @@ with c4:
     zile_circuit = st.number_input(
         "Zile circuit",
         min_value=1,
-        max_value=15,
-        value=4,
+        max_value=20,
+        value=5,
         step=1
     )
 
-with c5:
-    tinta_tarif = st.number_input(
-        "Țintă €/km",
-        min_value=0.50,
-        max_value=3.00,
-        value=1.20,
-        step=0.01,
-        format="%.2f"
+
+# =====================================================
+# CURSĂ INTERNĂ
+# =====================================================
+
+st.write("## 🇷🇴 Cursă internă după import")
+
+i1, i2 = st.columns(2)
+
+with i1:
+    km_intern = st.number_input(
+        "Km cursă internă până la garaj",
+        min_value=0,
+        value=0,
+        step=10
+    )
+
+with i2:
+    incasare_intern = st.number_input(
+        "Încasare cursă internă €",
+        min_value=0,
+        value=0,
+        step=50
     )
 
 
@@ -145,69 +155,69 @@ with c5:
 
 with st.expander("⚙️ Costuri camion", expanded=False):
 
-    x1, x2, x3, x4 = st.columns(4)
+    a1, a2, a3, a4 = st.columns(4)
 
-    with x1:
+    with a1:
         consum_motorina = st.number_input(
             "Consum motorină l/100 km",
-            value=37.0,
+            value=30.0,
             step=0.5
         )
 
-    with x2:
+    with a2:
         pret_motorina = st.number_input(
             "Motorină €/l",
             value=2.15,
             step=0.01
         )
 
-    with x3:
+    with a3:
         consum_adblue = st.number_input(
             "AdBlue l/100 km",
             value=1.7,
             step=0.1
         )
 
-    with x4:
+    with a4:
         pret_adblue = st.number_input(
             "AdBlue €/l",
             value=1.00,
             step=0.05
         )
 
-    y1, y2, y3, y4 = st.columns(4)
+    b1, b2, b3, b4 = st.columns(4)
 
-    with y1:
+    with b1:
         diurna = st.number_input(
             "Diurnă €/zi",
             value=100.0,
             step=5.0
         )
 
-    with y2:
+    with b2:
         salariu_lunar = st.number_input(
             "Salariu brut €/lună",
             value=1000.0,
             step=50.0
         )
 
-    with y3:
+    with b3:
         taxe_drum = st.number_input(
             "Taxe drum / circuit €",
             value=300.0,
             step=10.0
         )
 
-    with y4:
-        mentenanta_km = st.number_input(
-            "Revizii + anvelope €/km",
-            value=0.20,
-            step=0.01
+    with b4:
+        mentenanta = st.number_input(
+            "Mentenanță / circuit €",
+            value=150.0,
+            step=10.0
         )
 
 
 # =====================================================
-# OFERTE TEST
+# OFERTE IMPORT TEST
 # =====================================================
 
 curse_test = [
@@ -216,30 +226,27 @@ curse_test = [
         "descarcare": "Oradea, RO",
         "km_import": 720,
         "pret_import": 1150,
-        "km_gol": 45,
-        "greutate": 22
+        "km_gol": 45
     },
     {
         "incarcare": "Gliwice, PL",
         "descarcare": "Cluj-Napoca, RO",
         "km_import": 790,
         "pret_import": 1350,
-        "km_gol": 32,
-        "greutate": 24
+        "km_gol": 32
     },
     {
         "incarcare": "Częstochowa, PL",
         "descarcare": "Baia Mare, RO",
         "km_import": 690,
         "pret_import": 1250,
-        "km_gol": 78,
-        "greutate": 21
+        "km_gol": 78
     }
 ]
 
 
 # =====================================================
-# CĂUTARE
+# ANALIZĂ
 # =====================================================
 
 if st.button(
@@ -249,24 +256,20 @@ if st.button(
 ):
 
     if km_export <= 0:
+
         st.warning("Introdu km export.")
 
     elif pret_export <= 0:
-        st.warning("Introdu prețul exportului.")
+
+        st.warning("Introdu încasarea exportului.")
 
     elif not locatie:
-        st.warning("Introdu locația camionului.")
 
-    elif not destinatie:
-        st.warning("Introdu destinația importului.")
+        st.warning("Introdu locația camionului.")
 
     else:
 
         st.write("## 📊 Oferte import")
-
-        # -----------------------------
-        # COST ȘOFER
-        # -----------------------------
 
         salariu_zi = salariu_lunar / 30
 
@@ -277,95 +280,25 @@ if st.button(
 
         rezultate = []
 
+        # =================================================
+        # CALCULĂM TOATE OFERTELE
+        # =================================================
+
         for index, cursa in enumerate(curse_test):
 
             km_total = (
                 km_export
                 + cursa["km_gol"]
                 + cursa["km_import"]
+                + km_intern
             )
-
-            # Preț minim import pentru ținta €/km
-            venit_necesar_tinta = (
-                km_total * tinta_tarif
-            )
-
-            import_necesar = max(
-                0,
-                venit_necesar_tinta - pret_export
-            )
-
-            rezultate.append({
-                **cursa,
-                "index": index,
-                "km_total": km_total,
-                "import_necesar": import_necesar
-            })
-
-        # Sortare inițială după oferta de import
-        rezultate = sorted(
-            rezultate,
-            key=lambda x: x["pret_import"],
-            reverse=True
-        )
-
-
-        # =================================================
-        # AFIȘARE COMPACTĂ
-        # =================================================
-
-        for nr, cursa in enumerate(rezultate, start=1):
-
-            st.markdown(
-                f"### {nr}. {cursa['incarcare']} → "
-                f"{cursa['descarcare']}"
-            )
-
-            a, b, c, d, e, f = st.columns(
-                [1.4, 1, 1, 1.4, 1.2, 1.2]
-            )
-
-            with a:
-                st.write(
-                    f"**Ofertă:** {cursa['pret_import']} €"
-                )
-
-            with b:
-                st.write(
-                    f"**Gol:** {cursa['km_gol']} km"
-                )
-
-            with c:
-                st.write(
-                    f"**Import:** {cursa['km_import']} km"
-                )
-
-            with d:
-
-                pret_negociat = st.number_input(
-                    "Preț negociat €",
-                    min_value=0,
-                    value=cursa["pret_import"],
-                    step=10,
-                    key=f"negociat_{cursa['index']}"
-                )
-
-            # -----------------------------------------
-            # CALCUL CU PREȚUL NEGOCIAT
-            # -----------------------------------------
 
             venit_total = (
                 pret_export
-                + pret_negociat
+                + cursa["pret_import"]
+                + incasare_intern
             )
 
-            km_total = cursa["km_total"]
-
-            tarif_ciclu = (
-                venit_total / km_total
-            )
-
-            # MOTORINĂ
             litri_motorina = (
                 km_total
                 * consum_motorina
@@ -377,7 +310,6 @@ if st.button(
                 * pret_motorina
             )
 
-            # ADBLUE
             litri_adblue = (
                 km_total
                 * consum_adblue
@@ -389,103 +321,134 @@ if st.button(
                 * pret_adblue
             )
 
-            # MENTENANȚĂ
-            cost_mentenanta = (
-                km_total
-                * mentenanta_km
-            )
-
-            # COST TOTAL
             cost_total = (
                 cost_motorina
                 + cost_adblue
-                + cost_mentenanta
-                + taxe_drum
                 + cost_sofer
+                + taxe_drum
+                + mentenanta
             )
 
-            # PROFIT
             profit = (
                 venit_total
                 - cost_total
             )
 
-            # CÂT MAI TREBUIE NEGOCIAT
-            diferenta_tinta = max(
-                0,
-                cursa["import_necesar"]
-                - pret_negociat
+            venit_km = (
+                venit_total / km_total
             )
 
-            with e:
+            cost_km = (
+                cost_total / km_total
+            )
 
-                if tarif_ciclu >= tinta_tarif:
+            profit_km = (
+                profit / km_total
+            )
 
-                    st.markdown(
-                        f"<span class='verde'>"
-                        f"🟢 {tarif_ciclu:.3f} €/km"
-                        f"</span>",
-                        unsafe_allow_html=True
-                    )
+            # Import minim pentru ZERO profit
+            import_zero_profit = max(
+                0,
+                cost_total
+                - pret_export
+                - incasare_intern
+            )
 
-                else:
+            rezultate.append({
+                **cursa,
+                "index": index,
+                "km_total": km_total,
+                "venit_total": venit_total,
+                "cost_total": cost_total,
+                "profit": profit,
+                "venit_km": venit_km,
+                "cost_km": cost_km,
+                "profit_km": profit_km,
+                "import_zero_profit": import_zero_profit
+            })
 
-                    st.markdown(
-                        f"<span class='rosu'>"
-                        f"🔴 {tarif_ciclu:.3f} €/km"
-                        f"</span>",
-                        unsafe_allow_html=True
-                    )
 
-            with f:
+        # Cele mai profitabile primele
+        rezultate = sorted(
+            rezultate,
+            key=lambda x: x["profit"],
+            reverse=True
+        )
 
-                if profit >= 0:
 
-                    st.markdown(
-                        f"<span class='verde'>"
-                        f"Profit: {profit:.0f} €"
-                        f"</span>",
-                        unsafe_allow_html=True
-                    )
+        # =================================================
+        # AFIȘARE
+        # =================================================
 
-                else:
+        for nr, cursa in enumerate(rezultate, start=1):
 
-                    st.markdown(
-                        f"<span class='rosu'>"
-                        f"Pierdere: {profit:.0f} €"
-                        f"</span>",
-                        unsafe_allow_html=True
-                    )
+            st.markdown(
+                f"### {nr}. {cursa['incarcare']} → "
+                f"{cursa['descarcare']}"
+            )
 
-            # -----------------------------------------
-            # AL DOILEA RÂND - FOARTE COMPACT
-            # -----------------------------------------
-
-            r1, r2, r3, r4 = st.columns(4)
+            r1, r2, r3, r4, r5, r6 = st.columns(
+                [1.2, 0.8, 0.9, 1.2, 1.0, 1.0]
+            )
 
             with r1:
-                st.caption(
-                    f"Total circuit: {km_total} km"
+                st.write(
+                    f"**Ofertă:** {cursa['pret_import']} €"
                 )
 
             with r2:
-                st.caption(
-                    f"Cost total: {cost_total:.0f} €"
+                st.write(
+                    f"**Gol:** {cursa['km_gol']} km"
                 )
 
             with r3:
-                st.caption(
-                    f"Import necesar: "
-                    f"{cursa['import_necesar']:.0f} €"
+                st.write(
+                    f"**Import:** {cursa['km_import']} km"
                 )
 
             with r4:
 
-                if diferenta_tinta > 0:
+                pret_negociat = st.number_input(
+                    "Preț negociat €",
+                    min_value=0,
+                    value=cursa["pret_import"],
+                    step=10,
+                    key=f"pret_{cursa['index']}"
+                )
+
+
+            # =================================================
+            # RECALCULARE CU PREȚ NEGOCIAT
+            # =================================================
+
+            venit_total = (
+                pret_export
+                + pret_negociat
+                + incasare_intern
+            )
+
+            profit = (
+                venit_total
+                - cursa["cost_total"]
+            )
+
+            venit_km = (
+                venit_total
+                / cursa["km_total"]
+            )
+
+            profit_km = (
+                profit
+                / cursa["km_total"]
+            )
+
+            with r5:
+
+                if profit >= 0:
 
                     st.markdown(
-                        f"<span class='rosu mic'>"
-                        f"Negociază +{diferenta_tinta:.0f} €"
+                        f"<span class='green'>"
+                        f"🟢 +{profit:.0f} €"
                         f"</span>",
                         unsafe_allow_html=True
                     )
@@ -493,8 +456,86 @@ if st.button(
                 else:
 
                     st.markdown(
-                        "<span class='verde mic'>"
-                        "✓ ȚINTĂ ATINSĂ"
+                        f"<span class='red'>"
+                        f"🔴 {profit:.0f} €"
+                        f"</span>",
+                        unsafe_allow_html=True
+                    )
+
+            with r6:
+
+                if profit >= 0:
+
+                    st.markdown(
+                        f"<span class='green'>"
+                        f"{venit_km:.3f} €/km"
+                        f"</span>",
+                        unsafe_allow_html=True
+                    )
+
+                else:
+
+                    st.markdown(
+                        f"<span class='red'>"
+                        f"{venit_km:.3f} €/km"
+                        f"</span>",
+                        unsafe_allow_html=True
+                    )
+
+
+            # =================================================
+            # AL DOILEA RÂND
+            # =================================================
+
+            x1, x2, x3, x4, x5 = st.columns(5)
+
+            with x1:
+
+                st.caption(
+                    f"Total: {cursa['km_total']:.0f} km"
+                )
+
+            with x2:
+
+                st.caption(
+                    f"Cost: {cursa['cost_total']:.0f} €"
+                )
+
+            with x3:
+
+                st.caption(
+                    f"Cost/km: "
+                    f"{cursa['cost_km']:.3f} €"
+                )
+
+            with x4:
+
+                st.caption(
+                    f"Profit/km: "
+                    f"{profit_km:.3f} €"
+                )
+
+            with x5:
+
+                diferenta = (
+                    cursa["import_zero_profit"]
+                    - pret_negociat
+                )
+
+                if diferenta > 0:
+
+                    st.markdown(
+                        f"<span class='red small'>"
+                        f"Zero profit: +{diferenta:.0f} €"
+                        f"</span>",
+                        unsafe_allow_html=True
+                    )
+
+                else:
+
+                    st.markdown(
+                        "<span class='green small'>"
+                        "✓ Peste prag rentabilitate"
                         "</span>",
                         unsafe_allow_html=True
                     )
@@ -502,8 +543,42 @@ if st.button(
             st.divider()
 
 
+        # =================================================
+        # REPER COSTURI
+        # =================================================
+
+        with st.expander(
+            "📋 Cum se calculează costul",
+            expanded=False
+        ):
+
+            st.write(
+                f"Motorină: **{consum_motorina:.1f} l/100 km** "
+                f"× **{pret_motorina:.2f} €/l**"
+            )
+
+            st.write(
+                f"AdBlue: **{consum_adblue:.1f} l/100 km** "
+                f"× **{pret_adblue:.2f} €/l**"
+            )
+
+            st.write(
+                f"Șofer: **{diurna:.0f} €/zi diurnă + "
+                f"{salariu_zi:.2f} €/zi salariu** "
+                f"× **{zile_circuit} zile**"
+            )
+
+            st.write(
+                f"Taxe drum: **{taxe_drum:.0f} €**"
+            )
+
+            st.write(
+                f"Mentenanță: **{mentenanta:.0f} € / circuit**"
+            )
+
+
         st.caption(
-            "⚠️ Ofertele sunt momentan date de test. "
-            "După conectarea Trans.eu vor fi înlocuite "
+            "⚠️ Ofertele de import sunt momentan date de test. "
+            "După conectarea API Trans.eu vor fi înlocuite "
             "cu ofertele reale."
         )
