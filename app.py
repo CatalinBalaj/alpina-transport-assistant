@@ -53,7 +53,7 @@ if km_export > 0:
 st.divider()
 
 # =========================
-# CAMION LIBER
+# CAMION DISPONIBIL
 # =========================
 
 st.write("## 🚛 Camion disponibil după descărcare")
@@ -100,7 +100,29 @@ with c5:
 st.divider()
 
 # =========================
-# CURSE IMPORT TEST
+# ȚINTĂ RENTABILITATE
+# =========================
+
+st.write("## 🎯 Țintă rentabilitate")
+
+tinta_tarif = st.number_input(
+    "Tarif minim dorit pentru întreg ciclul (€/km)",
+    min_value=0.50,
+    max_value=3.00,
+    value=1.20,
+    step=0.05,
+    format="%.2f"
+)
+
+st.caption(
+    "Aplicația va calcula cât trebuie obținut la import "
+    "pentru ca Export + km gol + Import să atingă această țintă."
+)
+
+st.divider()
+
+# =========================
+# IMPORTURI TEST
 # =========================
 
 curse_test = [
@@ -131,7 +153,7 @@ curse_test = [
 ]
 
 # =========================
-# CĂUTARE / CALCUL
+# CALCUL
 # =========================
 
 if st.button(
@@ -147,7 +169,7 @@ if st.button(
         st.warning("Introdu prețul cursei de export.")
 
     elif not locatie:
-        st.warning("Introdu locația camionului după descărcarea exportului.")
+        st.warning("Introdu locația camionului după descărcare.")
 
     elif not destinatie:
         st.warning("Introdu destinația dorită pentru import.")
@@ -158,33 +180,46 @@ if st.button(
 
         for cursa in curse_test:
 
-            venit_total = (
-                pret_export +
-                cursa["pret_import"]
+            km_total = (
+                km_export
+                + cursa["km_gol"]
+                + cursa["km_import"]
             )
 
-            km_total = (
-                km_export +
-                cursa["km_gol"] +
-                cursa["km_import"]
+            venit_total = (
+                pret_export
+                + cursa["pret_import"]
             )
 
             tarif_import_real = (
-                cursa["pret_import"] /
-                (cursa["km_gol"] + cursa["km_import"])
+                cursa["pret_import"]
+                / (cursa["km_gol"] + cursa["km_import"])
             )
 
             tarif_ciclu = venit_total / km_total
 
+            # Venitul TOTAL necesar pentru atingerea țintei
+            venit_necesar_total = km_total * tinta_tarif
+
+            # Cât trebuie să aducă importul
+            import_necesar = venit_necesar_total - pret_export
+
+            # Diferența față de oferta actuală
+            diferenta_negociere = (
+                import_necesar - cursa["pret_import"]
+            )
+
             rezultat = cursa.copy()
-            rezultat["venit_total"] = venit_total
+
             rezultat["km_total"] = km_total
+            rezultat["venit_total"] = venit_total
             rezultat["tarif_import_real"] = tarif_import_real
             rezultat["tarif_ciclu"] = tarif_ciclu
+            rezultat["import_necesar"] = import_necesar
+            rezultat["diferenta_negociere"] = diferenta_negociere
 
             rezultate.append(rezultat)
 
-        # Cele mai rentabile cicluri primele
         rezultate = sorted(
             rezultate,
             key=lambda x: x["tarif_ciclu"],
@@ -229,27 +264,62 @@ if st.button(
                         f"{cursa['tarif_ciclu']:.2f} €/km"
                     )
 
+                if cursa["tarif_ciclu"] >= tinta_tarif:
+
+                    diferenta_peste = (
+                        cursa["pret_import"]
+                        - cursa["import_necesar"]
+                    )
+
+                    st.success(
+                        f"🟢 ȚINTĂ ATINSĂ — "
+                        f"cursa depășește ținta de "
+                        f"{tinta_tarif:.2f} €/km cu aproximativ "
+                        f"{max(0, diferenta_peste):.0f} €."
+                    )
+
+                else:
+
+                    st.error(
+                        f"🔴 SUB ȚINTĂ — Pentru a ajunge la "
+                        f"{tinta_tarif:.2f} €/km pe întreg ciclul, "
+                        f"importul trebuie să fie de minimum "
+                        f"{cursa['import_necesar']:.0f} €."
+                    )
+
+                    st.warning(
+                        f"💬 DE NEGOCIAT: +"
+                        f"{max(0, cursa['diferenta_negociere']):.0f} € "
+                        f"față de oferta actuală."
+                    )
+
                 st.write("#### 🚛 Circuit complet")
 
                 st.write(
-                    f"Export: **{km_export} km / {pret_export} €**  →  "
-                    f"Gol: **{cursa['km_gol']} km**  →  "
+                    f"Export: **{km_export} km / {pret_export} €** → "
+                    f"Gol: **{cursa['km_gol']} km** → "
                     f"Import: **{cursa['km_import']} km / "
                     f"{cursa['pret_import']} €**"
                 )
 
-                t1, t2 = st.columns(2)
+                r1, r2, r3 = st.columns(3)
 
-                with t1:
+                with r1:
                     st.metric(
-                        "KM TOTAL CICLU",
+                        "KM TOTAL",
                         f"{cursa['km_total']} km"
                     )
 
-                with t2:
+                with r2:
                     st.metric(
-                        "VENIT TOTAL CICLU",
+                        "VENIT TOTAL",
                         f"{cursa['venit_total']} €"
+                    )
+
+                with r3:
+                    st.metric(
+                        "IMPORT NECESAR PT. ȚINTĂ",
+                        f"{cursa['import_necesar']:.0f} €"
                     )
 
         st.caption(
