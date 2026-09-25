@@ -14,6 +14,10 @@ st.success("🟢 Aplicația este online")
 
 st.divider()
 
+# =========================
+# CAMION DISPONIBIL
+# =========================
+
 st.write("### 🚛 Camion disponibil")
 
 col1, col2, col3 = st.columns(3)
@@ -63,6 +67,10 @@ with col5:
 
 st.divider()
 
+# =========================
+# CRITERII
+# =========================
+
 st.write("### 🎯 Criterii căutare")
 
 col6, col7, col8 = st.columns(3)
@@ -94,7 +102,46 @@ with col8:
 
 st.write("")
 
-if st.button("🔎 CAUTĂ CURSE", type="primary", use_container_width=True):
+# =========================
+# CURSE TEST
+# =========================
+
+curse_test = [
+    {
+        "incarcare": "Katowice, PL",
+        "descarcare": "Oradea, RO",
+        "km": 720,
+        "pret": 1150,
+        "km_pana_incarcare": 45,
+        "greutate": 22
+    },
+    {
+        "incarcare": "Gliwice, PL",
+        "descarcare": "Cluj-Napoca, RO",
+        "km": 790,
+        "pret": 1350,
+        "km_pana_incarcare": 32,
+        "greutate": 24
+    },
+    {
+        "incarcare": "Częstochowa, PL",
+        "descarcare": "Baia Mare, RO",
+        "km": 690,
+        "pret": 1250,
+        "km_pana_incarcare": 78,
+        "greutate": 21
+    }
+]
+
+# =========================
+# BUTON CĂUTARE
+# =========================
+
+if st.button(
+    "🔎 CAUTĂ CURSE",
+    type="primary",
+    use_container_width=True
+):
 
     if not locatie:
         st.warning("Introdu locația camionului.")
@@ -103,11 +150,87 @@ if st.button("🔎 CAUTĂ CURSE", type="primary", use_container_width=True):
         st.warning("Introdu destinația dorită.")
 
     else:
-        st.info(
-            f"🔎 Căutare: {locatie} → {destinatie} | "
-            f"{semiremorca} | rază {raza}"
+
+        st.divider()
+        st.write("## 📋 Curse găsite")
+
+        rezultate = []
+
+        for cursa in curse_test:
+
+            tarif_km = cursa["pret"] / cursa["km"]
+
+            if (
+                cursa["pret"] >= pret_minim
+                and tarif_km >= tarif_minim
+                and cursa["greutate"] <= greutate_max
+            ):
+
+                cursa["tarif_km"] = tarif_km
+                rezultate.append(cursa)
+
+        rezultate = sorted(
+            rezultate,
+            key=lambda x: x["tarif_km"],
+            reverse=True
         )
 
-        st.warning(
-            "Conectarea la Trans.eu este în așteptarea accesului API."
+        if not rezultate:
+
+            st.warning(
+                "Nu există curse care să respecte criteriile selectate."
+            )
+
+        else:
+
+            st.success(
+                f"Au fost găsite {len(rezultate)} curse potrivite."
+            )
+
+            for nr, cursa in enumerate(rezultate, start=1):
+
+                with st.container(border=True):
+
+                    st.write(
+                        f"### {nr}. "
+                        f"{cursa['incarcare']} → "
+                        f"{cursa['descarcare']}"
+                    )
+
+                    c1, c2, c3, c4, c5 = st.columns(5)
+
+                    with c1:
+                        st.metric(
+                            "Distanță cursă",
+                            f"{cursa['km']} km"
+                        )
+
+                    with c2:
+                        st.metric(
+                            "Preț",
+                            f"{cursa['pret']} €"
+                        )
+
+                    with c3:
+                        st.metric(
+                            "Tarif",
+                            f"{cursa['tarif_km']:.2f} €/km"
+                        )
+
+                    with c4:
+                        st.metric(
+                            "Până la încărcare",
+                            f"{cursa['km_pana_incarcare']} km"
+                        )
+
+                    with c5:
+                        st.metric(
+                            "Greutate",
+                            f"{cursa['greutate']} t"
+                        )
+
+        st.caption(
+            "⚠️ Momentan sunt afișate curse de test. "
+            "După aprobarea API Trans.eu, acestea vor fi "
+            "înlocuite cu ofertele reale."
         )
