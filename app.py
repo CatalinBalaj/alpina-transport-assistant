@@ -19,20 +19,20 @@ st.markdown("""
     max-width: 1600px;
 }
 
-h1 {font-size: 1.65rem !important;}
-h2 {font-size: 1.15rem !important;}
-h3 {font-size: 1rem !important;}
+h1 {font-size: 1.55rem !important;}
+h2 {font-size: 1.10rem !important;}
+h3 {font-size: 0.95rem !important;}
 
 div[data-testid="stMetricValue"] {
-    font-size: 1.15rem;
+    font-size: 1.05rem;
 }
 
 div[data-testid="stMetricLabel"] {
-    font-size: 0.72rem;
+    font-size: 0.70rem;
 }
 
 .small {
-    font-size: 0.80rem;
+    font-size: 0.78rem;
 }
 
 .green {
@@ -44,31 +44,39 @@ div[data-testid="stMetricLabel"] {
     color: #dc2626;
     font-weight: bold;
 }
+
+.orange {
+    color: #d97706;
+    font-weight: bold;
+}
 </style>
 """, unsafe_allow_html=True)
 
+
 st.title("🚛 Alpina Transport Assistant")
-st.caption("Analiză rentabilitate circuit complet")
+st.caption(
+    "Export → Import extern → Import România → Garaj"
+)
 
 
 # =====================================================
-# EXPORT
+# 1. EXPORT
 # =====================================================
 
-st.write("## 🇷🇴 Export")
+st.write("## 1️⃣ EXPORT – FIX")
 
 e1, e2, e3, e4 = st.columns(4)
 
 with e1:
     plecare_export = st.text_input(
-        "Plecare",
-        placeholder="Baia Mare, RO"
+        "Plecare export",
+        placeholder="Baia Mare"
     )
 
 with e2:
     descarcare_export = st.text_input(
-        "Descărcare",
-        placeholder="Katowice, PL"
+        "Descărcare export",
+        placeholder="Polonia"
     )
 
 with e3:
@@ -89,16 +97,16 @@ with e4:
 
 
 # =====================================================
-# CAMION DUPĂ EXPORT
+# 2. CAMION LIBER / IMPORT EXTERN
 # =====================================================
 
-st.write("## 🚛 Camion disponibil")
+st.write("## 2️⃣ IMPORT EXTERN – DE NEGOCIAT")
 
 c1, c2, c3, c4 = st.columns(4)
 
 with c1:
     locatie = st.text_input(
-        "Locație camion",
+        "Camion liber în",
         placeholder="Katowice, PL"
     )
 
@@ -116,7 +124,7 @@ with c3:
 
 with c4:
     zile_circuit = st.number_input(
-        "Zile circuit",
+        "Zile circuit total",
         min_value=1,
         max_value=20,
         value=5,
@@ -125,27 +133,59 @@ with c4:
 
 
 # =====================================================
-# CURSĂ INTERNĂ
+# 3. IMPORT PE ȚARĂ
 # =====================================================
 
-st.write("## 🇷🇴 Cursă internă după import")
+st.write("## 3️⃣ IMPORT PE ȚARĂ → GARAJ")
 
-i1, i2 = st.columns(2)
+t1, t2, t3 = st.columns(3)
 
-with i1:
-    km_intern = st.number_input(
-        "Km cursă internă până la garaj",
+with t1:
+    km_gol_intern = st.number_input(
+        "Km gol până la încărcare internă",
         min_value=0,
         value=0,
         step=10
     )
 
-with i2:
+with t2:
+    km_intern = st.number_input(
+        "Km cursă internă",
+        min_value=0,
+        value=0,
+        step=10
+    )
+
+with t3:
     incasare_intern = st.number_input(
-        "Încasare cursă internă €",
+        "Încasare import pe țară €",
         min_value=0,
         value=0,
         step=50
+    )
+
+
+# =====================================================
+# ȚINTĂ
+# =====================================================
+
+st.write("## 🎯 RENTABILITATE")
+
+r1, r2 = st.columns(2)
+
+with r1:
+    tinta_profit = st.number_input(
+        "Marjă minimă profit %",
+        min_value=0.0,
+        max_value=50.0,
+        value=20.0,
+        step=1.0
+    )
+
+with r2:
+    st.info(
+        "Aplicația calculează cât trebuie cerut "
+        "DOAR pe importul extern."
     )
 
 
@@ -217,7 +257,7 @@ with st.expander("⚙️ Costuri camion", expanded=False):
 
 
 # =====================================================
-# OFERTE IMPORT TEST
+# OFERTE IMPORT EXTERN - TEST
 # =====================================================
 
 curse_test = [
@@ -250,26 +290,24 @@ curse_test = [
 # =====================================================
 
 if st.button(
-    "🔎 ANALIZEAZĂ IMPORTURILE",
+    "🔎 ANALIZEAZĂ IMPORTURILE EXTERNE",
     type="primary",
     use_container_width=True
 ):
 
     if km_export <= 0:
-
         st.warning("Introdu km export.")
 
     elif pret_export <= 0:
-
         st.warning("Introdu încasarea exportului.")
 
     elif not locatie:
-
         st.warning("Introdu locația camionului.")
 
-    else:
+    elif tinta_profit >= 100:
+        st.warning("Marja trebuie să fie sub 100%.")
 
-        st.write("## 📊 Oferte import")
+    else:
 
         salariu_zi = salariu_lunar / 30
 
@@ -278,10 +316,12 @@ if st.button(
             * zile_circuit
         )
 
+        marja = tinta_profit / 100
+
         rezultate = []
 
         # =================================================
-        # CALCULĂM TOATE OFERTELE
+        # CALCUL FIECARE IMPORT EXTERN
         # =================================================
 
         for index, cursa in enumerate(curse_test):
@@ -290,15 +330,11 @@ if st.button(
                 km_export
                 + cursa["km_gol"]
                 + cursa["km_import"]
+                + km_gol_intern
                 + km_intern
             )
 
-            venit_total = (
-                pret_export
-                + cursa["pret_import"]
-                + incasare_intern
-            )
-
+            # MOTORINĂ
             litri_motorina = (
                 km_total
                 * consum_motorina
@@ -310,6 +346,7 @@ if st.button(
                 * pret_motorina
             )
 
+            # ADBLUE
             litri_adblue = (
                 km_total
                 * consum_adblue
@@ -321,6 +358,7 @@ if st.button(
                 * pret_adblue
             )
 
+            # COST TOTAL CIRCUIT
             cost_total = (
                 cost_motorina
                 + cost_adblue
@@ -329,27 +367,25 @@ if st.button(
                 + mentenanta
             )
 
-            profit = (
-                venit_total
-                - cost_total
+            # =============================================
+            # ÎNCASAREA NECESARĂ PENTRU MARJA DORITĂ
+            #
+            # marja = profit / venit
+            #
+            # venit necesar =
+            # cost / (1 - marja)
+            # =============================================
+
+            venit_necesar = (
+                cost_total / (1 - marja)
             )
 
-            venit_km = (
-                venit_total / km_total
-            )
+            # Exportul și importul intern sunt FIXE.
+            # Diferența trebuie produsă de IMPORTUL EXTERN.
 
-            cost_km = (
-                cost_total / km_total
-            )
-
-            profit_km = (
-                profit / km_total
-            )
-
-            # Import minim pentru ZERO profit
-            import_zero_profit = max(
+            import_extern_necesar = max(
                 0,
-                cost_total
+                venit_necesar
                 - pret_export
                 - incasare_intern
             )
@@ -358,22 +394,24 @@ if st.button(
                 **cursa,
                 "index": index,
                 "km_total": km_total,
-                "venit_total": venit_total,
                 "cost_total": cost_total,
-                "profit": profit,
-                "venit_km": venit_km,
-                "cost_km": cost_km,
-                "profit_km": profit_km,
-                "import_zero_profit": import_zero_profit
+                "import_extern_necesar": import_extern_necesar
             })
 
 
-        # Cele mai profitabile primele
+        # =================================================
+        # SORTARE DUPĂ CÂT DE APROAPE ESTE OFERTA DE ȚINTĂ
+        # =================================================
+
         rezultate = sorted(
             rezultate,
-            key=lambda x: x["profit"],
+            key=lambda x:
+            x["pret_import"] - x["import_extern_necesar"],
             reverse=True
         )
+
+
+        st.write("## 📊 Import extern")
 
 
         # =================================================
@@ -387,38 +425,38 @@ if st.button(
                 f"{cursa['descarcare']}"
             )
 
-            r1, r2, r3, r4, r5, r6 = st.columns(
-                [1.2, 0.8, 0.9, 1.2, 1.0, 1.0]
+            col1, col2, col3, col4, col5, col6 = st.columns(
+                [1.0, 0.8, 0.9, 1.1, 1.1, 1.1]
             )
 
-            with r1:
+            with col1:
                 st.write(
                     f"**Ofertă:** {cursa['pret_import']} €"
                 )
 
-            with r2:
+            with col2:
                 st.write(
                     f"**Gol:** {cursa['km_gol']} km"
                 )
 
-            with r3:
+            with col3:
                 st.write(
-                    f"**Import:** {cursa['km_import']} km"
+                    f"**Km:** {cursa['km_import']}"
                 )
 
-            with r4:
+            with col4:
 
                 pret_negociat = st.number_input(
                     "Preț negociat €",
                     min_value=0,
                     value=cursa["pret_import"],
                     step=10,
-                    key=f"pret_{cursa['index']}"
+                    key=f"negociat_{cursa['index']}"
                 )
 
 
             # =================================================
-            # RECALCULARE CU PREȚ NEGOCIAT
+            # RECALCULARE CU PREȚUL NEGOCIAT
             # =================================================
 
             venit_total = (
@@ -432,23 +470,50 @@ if st.button(
                 - cursa["cost_total"]
             )
 
-            venit_km = (
-                venit_total
-                / cursa["km_total"]
+            if venit_total > 0:
+
+                rentabilitate = (
+                    profit / venit_total
+                ) * 100
+
+            else:
+
+                rentabilitate = 0
+
+
+            diferenta_negociat = max(
+                0,
+                cursa["import_extern_necesar"]
+                - pret_negociat
             )
 
-            profit_km = (
-                profit
-                / cursa["km_total"]
-            )
 
-            with r5:
+            # =================================================
+            # NECESAR IMPORT EXTERN
+            # =================================================
 
-                if profit >= 0:
+            with col5:
+
+                st.markdown(
+                    f"<span class='orange'>"
+                    f"Necesar: "
+                    f"{cursa['import_extern_necesar']:.0f} €"
+                    f"</span>",
+                    unsafe_allow_html=True
+                )
+
+
+            # =================================================
+            # CÂT TREBUIE NEGOCIAT
+            # =================================================
+
+            with col6:
+
+                if diferenta_negociat > 0:
 
                     st.markdown(
-                        f"<span class='green'>"
-                        f"🟢 +{profit:.0f} €"
+                        f"<span class='red'>"
+                        f"💬 +{diferenta_negociat:.0f} €"
                         f"</span>",
                         unsafe_allow_html=True
                     )
@@ -456,77 +521,44 @@ if st.button(
                 else:
 
                     st.markdown(
-                        f"<span class='red'>"
-                        f"🔴 {profit:.0f} €"
-                        f"</span>",
-                        unsafe_allow_html=True
-                    )
-
-            with r6:
-
-                if profit >= 0:
-
-                    st.markdown(
-                        f"<span class='green'>"
-                        f"{venit_km:.3f} €/km"
-                        f"</span>",
-                        unsafe_allow_html=True
-                    )
-
-                else:
-
-                    st.markdown(
-                        f"<span class='red'>"
-                        f"{venit_km:.3f} €/km"
-                        f"</span>",
+                        "<span class='green'>"
+                        "✓ ȚINTĂ ATINSĂ"
+                        "</span>",
                         unsafe_allow_html=True
                     )
 
 
             # =================================================
-            # AL DOILEA RÂND
+            # RÂNDUL 2
             # =================================================
 
             x1, x2, x3, x4, x5 = st.columns(5)
 
             with x1:
-
                 st.caption(
-                    f"Total: {cursa['km_total']:.0f} km"
+                    f"Total circuit: "
+                    f"{cursa['km_total']:.0f} km"
                 )
 
             with x2:
-
                 st.caption(
-                    f"Cost: {cursa['cost_total']:.0f} €"
+                    f"Cost total: "
+                    f"{cursa['cost_total']:.0f} €"
                 )
 
             with x3:
-
                 st.caption(
-                    f"Cost/km: "
-                    f"{cursa['cost_km']:.3f} €"
+                    f"Venit: "
+                    f"{venit_total:.0f} €"
                 )
 
             with x4:
 
-                st.caption(
-                    f"Profit/km: "
-                    f"{profit_km:.3f} €"
-                )
-
-            with x5:
-
-                diferenta = (
-                    cursa["import_zero_profit"]
-                    - pret_negociat
-                )
-
-                if diferenta > 0:
+                if profit >= 0:
 
                     st.markdown(
-                        f"<span class='red small'>"
-                        f"Zero profit: +{diferenta:.0f} €"
+                        f"<span class='green small'>"
+                        f"Profit: +{profit:.0f} €"
                         f"</span>",
                         unsafe_allow_html=True
                     )
@@ -534,9 +566,32 @@ if st.button(
                 else:
 
                     st.markdown(
-                        "<span class='green small'>"
-                        "✓ Peste prag rentabilitate"
-                        "</span>",
+                        f"<span class='red small'>"
+                        f"Pierdere: {profit:.0f} €"
+                        f"</span>",
+                        unsafe_allow_html=True
+                    )
+
+
+            with x5:
+
+                if rentabilitate >= tinta_profit:
+
+                    st.markdown(
+                        f"<span class='green small'>"
+                        f"Rentabilitate: "
+                        f"{rentabilitate:.1f}%"
+                        f"</span>",
+                        unsafe_allow_html=True
+                    )
+
+                else:
+
+                    st.markdown(
+                        f"<span class='red small'>"
+                        f"Rentabilitate: "
+                        f"{rentabilitate:.1f}%"
+                        f"</span>",
                         unsafe_allow_html=True
                     )
 
@@ -544,41 +599,18 @@ if st.button(
 
 
         # =================================================
-        # REPER COSTURI
+        # EXPLICAȚIE
         # =================================================
 
-        with st.expander(
-            "📋 Cum se calculează costul",
-            expanded=False
-        ):
-
-            st.write(
-                f"Motorină: **{consum_motorina:.1f} l/100 km** "
-                f"× **{pret_motorina:.2f} €/l**"
-            )
-
-            st.write(
-                f"AdBlue: **{consum_adblue:.1f} l/100 km** "
-                f"× **{pret_adblue:.2f} €/l**"
-            )
-
-            st.write(
-                f"Șofer: **{diurna:.0f} €/zi diurnă + "
-                f"{salariu_zi:.2f} €/zi salariu** "
-                f"× **{zile_circuit} zile**"
-            )
-
-            st.write(
-                f"Taxe drum: **{taxe_drum:.0f} €**"
-            )
-
-            st.write(
-                f"Mentenanță: **{mentenanta:.0f} € / circuit**"
-            )
-
+        st.caption(
+            f"🎯 Ținta este {tinta_profit:.0f}% marjă de profit. "
+            "Exportul și importul pe țară sunt considerate fixe. "
+            "Suma «Necesar» reprezintă exclusiv prețul pe care "
+            "trebuie să îl obții pentru IMPORTUL EXTERN."
+        )
 
         st.caption(
-            "⚠️ Ofertele de import sunt momentan date de test. "
+            "⚠️ Ofertele sunt momentan date de test. "
             "După conectarea API Trans.eu vor fi înlocuite "
             "cu ofertele reale."
         )
